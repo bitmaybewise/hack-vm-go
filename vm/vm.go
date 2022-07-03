@@ -13,7 +13,7 @@ import (
 func Assemble(input *os.File) string {
 	psr := parser.New(input)
 
-	var out strings.Builder
+	out := new(strings.Builder)
 
 	for {
 		line, err := psr.ReadLine()
@@ -36,6 +36,6 @@ func Assemble(input *os.File) string {
 		out.WriteString(asm)
 	}
 
-	out.WriteString(translator.EndLoop())
+	translator.EndLoop(out)
 	return out.String()
 }
