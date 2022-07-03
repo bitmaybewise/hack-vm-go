@@ -13,7 +13,7 @@ import (
 func Assemble(input *os.File) string {
 	psr := parser.New(input)
 
-	var output strings.Builder
+	var out strings.Builder
 
 	for {
 		line, err := psr.ReadLine()
@@ -32,11 +32,10 @@ func Assemble(input *os.File) string {
 			asm = translator.PushPop(line.CommandType(), line.Segment(), line.Index())
 		}
 
-		output.WriteString("// " + line.Raw + "\n")
-		output.WriteString(asm)
+		out.WriteString("// " + line.Raw + "\n")
+		out.WriteString(asm)
 	}
 
-	output.WriteString(translator.EndLoop())
-
-	return output.String()
+	out.WriteString(translator.EndLoop())
+	return out.String()
 }

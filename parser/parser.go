@@ -5,6 +5,8 @@ import (
 	"errors"
 	"io"
 	"strings"
+
+	"github.com/hack-vm-go/goutils"
 )
 
 type Command int
@@ -21,6 +23,10 @@ const (
 	C_CALL
 )
 
+var ArithmeticOp = []string{
+	"add", "sub", "neg", "eq", "lt", "gt", "and", "or", "not",
+}
+
 var IgnoredLine = errors.New("ignored line")
 
 type ParsedLine struct {
@@ -29,7 +35,7 @@ type ParsedLine struct {
 }
 
 func (pl ParsedLine) IsArithmetic() bool {
-	return pl.Args[0] == "add" || pl.Args[0] == "sub" || pl.Args[0] == "neg"
+	return goutils.Includes(ArithmeticOp, pl.Args[0])
 }
 
 func (pl ParsedLine) IsPushPop() bool {
@@ -44,17 +50,8 @@ func (pl ParsedLine) Index() string {
 	return pl.Args[2]
 }
 
-func (pl ParsedLine) CommandType() Command {
-	switch pl.Args[0] {
-	case "push":
-		return C_PUSH
-	case "pop":
-		return C_POP
-	case "add", "sub", "neg":
-		return C_ARITHMETIC
-	default:
-		return C_RETURN
-	}
+func (pl ParsedLine) CommandType() string {
+	return pl.Args[0]
 }
 
 var EmptyLine = ParsedLine{}
