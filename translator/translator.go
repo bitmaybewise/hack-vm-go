@@ -2,8 +2,11 @@ package translator
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
+
+const Temp0 = 5 // Temp0 starts at RAM[5]
 
 var symbolCounter int
 
@@ -88,20 +91,112 @@ func PushPop(cmd string, segment, index string) string {
 
 	switch cmd {
 	case "push":
-		if segment == "constant" {
-			out.WriteString("@" + index + "\n")
-			out.WriteString("D=A\n")
-			out.WriteString("@SP\n")
-			out.WriteString("A=M\n")
-			out.WriteString("M=D\n")
-			out.WriteString("@SP\n")
-			out.WriteString("M=M+1\n")
-		}
+		pushTo(out, segment, index)
 	case "pop":
-		pop1(out)
+		popTo(out, segment, index)
 	}
 
 	return out.String()
+}
+
+func pushTo(out *strings.Builder, segment, index string) {
+	n, err := strconv.Atoi(index)
+	if err != nil {
+		panic(err)
+	}
+	push := func() {
+		out.WriteString("@SP\n")
+		out.WriteString("A=M\n")
+		out.WriteString("M=D\n")
+		out.WriteString("@SP\n")
+		out.WriteString("M=M+1\n")
+	}
+	pop := func(at string) {
+		out.WriteString("@" + at + "\n")
+		for i := 0; i < n; i++ {
+			out.WriteString("M=M+1\n")
+		}
+		out.WriteString("A=M\n")
+		out.WriteString("D=M\n")
+		if n > 0 {
+			out.WriteString("@" + at + "\n")
+		}
+		for i := 0; i < n; i++ {
+			out.WriteString("M=M-1\n")
+		}
+	}
+	if segment == "constant" {
+		out.WriteString("@" + index + "\n")
+		out.WriteString("D=A\n")
+		push()
+		// out.WriteString("@SP\n")
+		// out.WriteString("A=M\n")
+		// out.WriteString("M=D\n")
+		// out.WriteString("@SP\n")
+		// out.WriteString("M=M+1\n")
+	}
+	if segment == "local" {
+		pop("LCL")
+		push()
+	}
+	if segment == "this" {
+		pop("THIS")
+		push()
+	}
+	if segment == "that" {
+		pop("THAT")
+		push()
+	}
+	if segment == "argument" {
+		pop("ARG")
+		push()
+	}
+	if segment == "temp" {
+		out.WriteString(fmt.Sprintf("@R%d\n", Temp0+n))
+		out.WriteString("D=M\n")
+		push()
+	}
+}
+
+func popTo(out *strings.Builder, segment, index string) {
+	n, err := strconv.Atoi(index)
+	if err != nil {
+		panic(err)
+	}
+	pop := func(at string) {
+		pop1(out)
+		for i := 0; i < n; i++ {
+			out.WriteString("@" + at + "\n")
+			out.WriteString("M=M+1\n")
+		}
+		out.WriteString("A=M\n")
+		out.WriteString("M=D\n")
+		for i := 0; i < n; i++ {
+			out.WriteString("@" + at + "\n")
+			out.WriteString("M=M-1\n")
+		}
+	}
+	if segment == "local" {
+		// pop("LCL")
+		pop1(out)
+		out.WriteString("@LCL\n")
+		out.WriteString("A=M\n")
+		out.WriteString("M=D\n")
+	}
+	if segment == "argument" {
+		pop("ARG")
+	}
+	if segment == "this" {
+		pop("THIS")
+	}
+	if segment == "that" {
+		pop("THAT")
+	}
+	if segment == "temp" {
+		pop1(out)
+		out.WriteString(fmt.Sprintf("@R%d\n", Temp0+n))
+		out.WriteString("M=D\n")
+	}
 }
 
 func EndLoop(out *strings.Builder) {
