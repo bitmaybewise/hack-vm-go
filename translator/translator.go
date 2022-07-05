@@ -86,20 +86,20 @@ func condJump(out *strings.Builder, cmd, asmCond string) {
 	out.WriteString(fmt.Sprintf("(%s_%d_END)\n", cmd, symbolCounter))
 }
 
-func PushPop(cmd string, segment, index string) string {
+func PushPop(cmd string, segment, index, filename string) string {
 	out := new(strings.Builder)
 
 	switch cmd {
 	case "push":
-		pushTo(out, segment, index)
+		pushTo(out, segment, index, filename)
 	case "pop":
-		popTo(out, segment, index)
+		popTo(out, segment, index, filename)
 	}
 
 	return out.String()
 }
 
-func pushTo(out *strings.Builder, segment, index string) {
+func pushTo(out *strings.Builder, segment, index, filename string) {
 	n, err := strconv.Atoi(index)
 	if err != nil {
 		panic(err)
@@ -129,11 +129,6 @@ func pushTo(out *strings.Builder, segment, index string) {
 		out.WriteString("@" + index + "\n")
 		out.WriteString("D=A\n")
 		push()
-		// out.WriteString("@SP\n")
-		// out.WriteString("A=M\n")
-		// out.WriteString("M=D\n")
-		// out.WriteString("@SP\n")
-		// out.WriteString("M=M+1\n")
 	}
 	if segment == "local" {
 		pop("LCL")
@@ -156,9 +151,14 @@ func pushTo(out *strings.Builder, segment, index string) {
 		out.WriteString("D=M\n")
 		push()
 	}
+	if segment == "static" {
+		out.WriteString(fmt.Sprintf("@%s.%d\n", filename, n))
+		out.WriteString("D=M\n")
+		push()
+	}
 }
 
-func popTo(out *strings.Builder, segment, index string) {
+func popTo(out *strings.Builder, segment, index, filename string) {
 	n, err := strconv.Atoi(index)
 	if err != nil {
 		panic(err)
@@ -177,7 +177,6 @@ func popTo(out *strings.Builder, segment, index string) {
 		}
 	}
 	if segment == "local" {
-		// pop("LCL")
 		pop1(out)
 		out.WriteString("@LCL\n")
 		out.WriteString("A=M\n")
@@ -195,6 +194,11 @@ func popTo(out *strings.Builder, segment, index string) {
 	if segment == "temp" {
 		pop1(out)
 		out.WriteString(fmt.Sprintf("@R%d\n", Temp0+n))
+		out.WriteString("M=D\n")
+	}
+	if segment == "static" {
+		pop1(out)
+		out.WriteString(fmt.Sprintf("@%s.%d\n", filename, n))
 		out.WriteString("M=D\n")
 	}
 }

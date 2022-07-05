@@ -29,7 +29,10 @@ func Assemble(input *os.File) string {
 			asm = translator.Arithmetic(line.CommandType())
 		}
 		if line.IsPushPop() {
-			asm = translator.PushPop(line.CommandType(), line.Segment(), line.Index())
+			inputNameSplit := strings.Split(input.Name(), "/")
+			filename := inputNameSplit[len(inputNameSplit)-1]
+			filename = strings.Replace(filename, ".vm", "", 1)
+			asm = translator.PushPop(line.CommandType(), line.Segment(), line.Index(), filename)
 		}
 
 		out.WriteString("// " + line.Raw + "\n")
