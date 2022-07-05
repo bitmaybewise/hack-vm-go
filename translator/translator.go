@@ -142,6 +142,16 @@ func pushTo(out *strings.Builder, segment, index, filename string) {
 		pop("THAT")
 		push()
 	}
+	if segment == "pointer" && n == 0 {
+		out.WriteString("@THIS\n")
+		out.WriteString("D=M\n")
+		push()
+	}
+	if segment == "pointer" && n == 1 {
+		out.WriteString("@THAT\n")
+		out.WriteString("D=M\n")
+		push()
+	}
 	if segment == "argument" {
 		pop("ARG")
 		push()
@@ -165,8 +175,8 @@ func popTo(out *strings.Builder, segment, index, filename string) {
 	}
 	pop := func(at string) {
 		pop1(out)
+		out.WriteString("@" + at + "\n")
 		for i := 0; i < n; i++ {
-			out.WriteString("@" + at + "\n")
 			out.WriteString("M=M+1\n")
 		}
 		out.WriteString("A=M\n")
@@ -190,6 +200,16 @@ func popTo(out *strings.Builder, segment, index, filename string) {
 	}
 	if segment == "that" {
 		pop("THAT")
+	}
+	if segment == "pointer" && n == 0 {
+		pop1(out)
+		out.WriteString("@THIS\n")
+		out.WriteString("M=D\n")
+	}
+	if segment == "pointer" && n == 1 {
+		pop1(out)
+		out.WriteString("@THAT\n")
+		out.WriteString("M=D\n")
 	}
 	if segment == "temp" {
 		pop1(out)
