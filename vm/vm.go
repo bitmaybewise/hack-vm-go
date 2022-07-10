@@ -31,6 +31,12 @@ func Assemble(input *os.File) string {
 		if line.IsPushPop() {
 			asm = translator.PushPop(line.CommandType(), line.Segment(), line.Index(), filename(input))
 		}
+		if line.IsLabel() {
+			asm = translator.Label(line.Segment(), filename(input))
+		}
+		if line.IsGoto() {
+			asm = translator.Goto(line.CommandType(), line.Segment(), filename(input))
+		}
 
 		out.WriteString("// " + line.Raw + "\n")
 		out.WriteString(asm)

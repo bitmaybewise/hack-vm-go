@@ -223,6 +223,31 @@ func popTo(out *strings.Builder, segment, index, filename string) {
 	}
 }
 
+func Label(segment, filename string) string {
+	return fmt.Sprintf("(%s)\n", labelName(segment, filename))
+}
+
+func labelName(segment, filename string) string {
+	return fmt.Sprintf("%s.%s", segment, filename)
+}
+
+func Goto(cmd, segment, filename string) string {
+	var out strings.Builder
+
+	switch cmd {
+	case "goto":
+		out.WriteString(fmt.Sprintf("@%s\n", labelName(segment, filename)))
+		out.WriteString("0;JMP\n")
+	case "if-goto":
+		out.WriteString("@SP\n")
+		out.WriteString("M=M-1\n")
+		out.WriteString(fmt.Sprintf("@%s\n", labelName(segment, filename)))
+		out.WriteString("D;JNE\n")
+	}
+
+	return out.String()
+}
+
 func EndLoop(out *strings.Builder) {
 	out.WriteString("(END)\n")
 	out.WriteString("@END\n")

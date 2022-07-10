@@ -36,8 +36,9 @@ func (p *Parser) ReadLine() (ParsedLine, error) {
 		line = line[:commentFoundAt-1]
 	}
 
-	line = strings.Replace(line, "\r", "", 1)
-	line = strings.Replace(line, "\n", "", 1)
+	line = strings.ReplaceAll(line, "\r", "")
+	line = strings.ReplaceAll(line, "\n", "")
+	line = strings.ReplaceAll(line, "\t", "")
 	line = strings.Trim(line, " ")
 	if line == "" {
 		return EmptyLine, IgnoredLine

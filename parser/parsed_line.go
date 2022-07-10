@@ -15,6 +15,14 @@ func (pl ParsedLine) IsPushPop() bool {
 	return pl.Args[0] == "push" || pl.Args[0] == "pop"
 }
 
+func (pl ParsedLine) IsLabel() bool {
+	return pl.Args[0] == "label"
+}
+
+func (pl ParsedLine) IsGoto() bool {
+	return pl.Args[0] == "goto" || pl.Args[0] == "if-goto"
+}
+
 func (pl ParsedLine) Segment() string {
 	return pl.Args[1]
 }
