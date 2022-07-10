@@ -10,7 +10,7 @@ const Temp0 = 5 // Temp0 starts at RAM[5]
 
 var symbolCounter int
 
-func Arithmetic(cmd string) string {
+func ArithmeticLogic(cmd string) string {
 	out := new(strings.Builder)
 
 	switch cmd {

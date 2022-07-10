@@ -25,14 +25,11 @@ func Assemble(input *os.File) string {
 		}
 
 		var asm string
-		if line.IsArithmetic() {
-			asm = translator.Arithmetic(line.CommandType())
+		if line.IsArithmeticOrLogic() {
+			asm = translator.ArithmeticLogic(line.CommandType())
 		}
 		if line.IsPushPop() {
-			inputNameSplit := strings.Split(input.Name(), "/")
-			filename := inputNameSplit[len(inputNameSplit)-1]
-			filename = strings.Replace(filename, ".vm", "", 1)
-			asm = translator.PushPop(line.CommandType(), line.Segment(), line.Index(), filename)
+			asm = translator.PushPop(line.CommandType(), line.Segment(), line.Index(), filename(input))
 		}
 
 		out.WriteString("// " + line.Raw + "\n")
@@ -41,4 +38,11 @@ func Assemble(input *os.File) string {
 
 	translator.EndLoop(out)
 	return out.String()
+}
+
+func filename(input *os.File) string {
+	inputNameSplit := strings.Split(input.Name(), "/")
+	name := inputNameSplit[len(inputNameSplit)-1]
+	name = strings.Replace(name, ".vm", "", 1)
+	return name
 }
