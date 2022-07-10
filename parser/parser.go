@@ -18,7 +18,8 @@ var (
 )
 
 type Parser struct {
-	input *bufio.Reader
+	input    *bufio.Reader
+	filename string
 }
 
 func (p *Parser) ReadLine() (ParsedLine, error) {
@@ -45,10 +46,10 @@ func (p *Parser) ReadLine() (ParsedLine, error) {
 	}
 
 	args := strings.Split(line, " ")
-	return ParsedLine{Raw: line, Args: args}, nil
+	return ParsedLine{Raw: line, Args: args, Filename: p.filename, idx: -1}, nil
 }
 
-func New(input io.Reader) Parser {
+func New(input io.Reader, filename string) Parser {
 	reader := bufio.NewReader(input)
-	return Parser{reader}
+	return Parser{input: reader, filename: filename}
 }

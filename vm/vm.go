@@ -11,8 +11,7 @@ import (
 )
 
 func Assemble(input *os.File) string {
-	psr := parser.New(input)
-
+	psr := parser.New(input, filenameWithoutExtension(input))
 	out := new(strings.Builder)
 
 	for {
@@ -24,29 +23,15 @@ func Assemble(input *os.File) string {
 			continue
 		}
 
-		var asm string
-		if line.IsArithmeticOrLogic() {
-			asm = translator.ArithmeticLogic(line.CommandType())
-		}
-		if line.IsPushPop() {
-			asm = translator.PushPop(line.CommandType(), line.Segment(), line.Index(), filename(input))
-		}
-		if line.IsLabel() {
-			asm = translator.Label(line.Segment(), filename(input))
-		}
-		if line.IsGoto() {
-			asm = translator.Goto(line.CommandType(), line.Segment(), filename(input))
-		}
-
 		out.WriteString("// " + line.Raw + "\n")
-		out.WriteString(asm)
+		out.WriteString(translator.ToAsm(line))
 	}
 
 	translator.EndLoop(out)
 	return out.String()
 }
 
-func filename(input *os.File) string {
+func filenameWithoutExtension(input *os.File) string {
 	inputNameSplit := strings.Split(input.Name(), "/")
 	name := inputNameSplit[len(inputNameSplit)-1]
 	name = strings.Replace(name, ".vm", "", 1)
