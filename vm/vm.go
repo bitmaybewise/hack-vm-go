@@ -13,6 +13,7 @@ import (
 func Assemble(input *os.File) string {
 	psr := parser.New(input, filenameWithoutExtension(input))
 	out := new(strings.Builder)
+	translator.Init(out)
 
 	for {
 		line, err := psr.ReadLine()
