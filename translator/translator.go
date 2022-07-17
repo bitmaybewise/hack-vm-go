@@ -13,20 +13,22 @@ type translator func() string
 
 func ToAsm(line parser.ParsedLine) string {
 	var commandMapping = map[string]translator{
-		"add":     add,
-		"sub":     sub,
-		"neg":     neg,
-		"not":     not,
-		"and":     and,
-		"or":      or,
-		"eq":      eq,
-		"lt":      lt,
-		"gt":      gt,
-		"push":    pushTo(line),
-		"pop":     popTo(line),
-		"label":   label(line),
-		"goto":    goTo(line),
-		"if-goto": ifGoTo(line),
+		"add":      add,
+		"sub":      sub,
+		"neg":      neg,
+		"not":      not,
+		"and":      and,
+		"or":       or,
+		"eq":       eq,
+		"lt":       lt,
+		"gt":       gt,
+		"push":     pushTo(line),
+		"pop":      popTo(line),
+		"label":    label(line),
+		"goto":     goTo(line),
+		"if-goto":  ifGoTo(line),
+		"function": function(line),
+		"return":   functionReturn(),
 	}
 
 	fn, ok := commandMapping[line.CommandType()]
