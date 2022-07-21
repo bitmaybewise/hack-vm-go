@@ -28,6 +28,7 @@ func ToAsm(line parser.ParsedLine) string {
 		"goto":     goTo(line),
 		"if-goto":  ifGoTo(line),
 		"function": function(line),
+		"call":     functionCall(line),
 		"return":   functionReturn(),
 	}
 

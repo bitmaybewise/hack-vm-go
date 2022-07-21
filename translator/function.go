@@ -24,6 +24,48 @@ func function(line parser.ParsedLine) translator {
 	}
 }
 
+var callCounter int
+
+func functionCall(line parser.ParsedLine) translator {
+	return func() string {
+		out := new(strings.Builder)
+		callCounter++
+		ref := fmt.Sprintf("%s$ret.%d", line.Id(), callCounter)
+
+		out.WriteString(fmt.Sprintf("@%s\n", ref))
+		out.WriteString("D=A\n")
+		push(out)
+		out.WriteString("@LCL\n")
+		out.WriteString("D=M\n")
+		push(out)
+		out.WriteString("@ARG\n")
+		out.WriteString("D=M\n")
+		push(out)
+		out.WriteString("@THIS\n")
+		out.WriteString("D=M\n")
+		push(out)
+		out.WriteString("@THAT\n")
+		out.WriteString("D=M\n")
+		push(out)
+		out.WriteString("@SP\n")
+		out.WriteString("D=M\n")
+		out.WriteString("D=D-1\n")
+		out.WriteString("D=D-1\n")
+		out.WriteString("D=D-1\n")
+		out.WriteString("D=D-1\n")
+		out.WriteString("D=D-1\n")
+		for i := 0; i < line.Idx(); i++ {
+			out.WriteString("D=D-1\n")
+		}
+		out.WriteString("@ARG\n")
+		out.WriteString("M=D\n")
+		out.WriteString(fmt.Sprintf("(%s)\n", ref))
+		out.WriteString("0;JMP\n")
+
+		return out.String()
+	}
+}
+
 func functionReturn() translator {
 	return func() string {
 		out := new(strings.Builder)
