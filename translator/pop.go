@@ -27,10 +27,7 @@ func popTo(line parser.ParsedLine) translator {
 
 		switch {
 		case line.Segment() == "local":
-			pop1(out)
-			out.WriteString("@LCL\n")
-			out.WriteString("A=M\n")
-			out.WriteString("M=D\n")
+			pop("LCL")
 		case line.Segment() == "argument":
 			pop("ARG")
 		case line.Segment() == "this":
