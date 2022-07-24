@@ -27,8 +27,10 @@ func ifGoTo(line parser.ParsedLine) translator {
 		out := new(strings.Builder)
 		out.WriteString("@SP\n")
 		out.WriteString("M=M-1\n")
+		out.WriteString("A=M\n")
+		out.WriteString("D=M\n")
 		out.WriteString(fmt.Sprintf("@%s\n", line.Id()))
-		out.WriteString("D;JNE\n")
+		out.WriteString("D;JLT\n")
 		return out.String()
 	}
 }

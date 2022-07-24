@@ -45,13 +45,13 @@ func eq() string {
 
 func lt() string {
 	out := new(strings.Builder)
-	condJump(out, "lt", "JGT")
+	condJump(out, "lt", "JLT")
 	return out.String()
 }
 
 func gt() string {
 	out := new(strings.Builder)
-	condJump(out, "gt", "JLT")
+	condJump(out, "gt", "JGT")
 	return out.String()
 }
 
@@ -61,7 +61,7 @@ func condJump(out *strings.Builder, cmd, asmCond string) {
 	symbolCounter++
 
 	pop2(out)
-	out.WriteString("D=D-M\n")
+	out.WriteString("D=M-D\n")
 	out.WriteString(fmt.Sprintf("@%s_%d\n", cmd, symbolCounter))
 	out.WriteString(fmt.Sprintf("D;%s\n", asmCond))
 	out.WriteString("@SP\n")

@@ -28,7 +28,6 @@ func Assemble(input *os.File) string {
 		out.WriteString(translator.ToAsm(line))
 	}
 
-	translator.EndLoop(out)
 	return out.String()
 }
 
