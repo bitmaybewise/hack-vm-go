@@ -10,10 +10,8 @@ import (
 	"github.com/hack-vm-go/translator"
 )
 
-func Assemble(input *os.File) string {
-	psr := parser.New(input, filenameWithoutExtension(input))
-	out := new(strings.Builder)
-	translator.Init(out)
+func Assemble(in *os.File, out *strings.Builder) {
+	psr := parser.New(in, filenameWithoutExtension(in))
 
 	for {
 		line, err := psr.ReadLine()
@@ -27,8 +25,6 @@ func Assemble(input *os.File) string {
 		out.WriteString("// " + line.Raw + "\n")
 		out.WriteString(translator.ToAsm(line))
 	}
-
-	return out.String()
 }
 
 func filenameWithoutExtension(input *os.File) string {

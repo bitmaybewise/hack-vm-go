@@ -3,10 +3,10 @@ package main
 import (
 	"flag"
 	"fmt"
-	"io"
 	"os"
 	"strings"
 
+	"github.com/hack-vm-go/translator"
 	"github.com/hack-vm-go/vm"
 )
 
@@ -19,23 +19,30 @@ func main() {
 		panic("filename/directory is missing")
 	}
 
-	var vmFile *os.File
-	defer vmFile.Close()
+	out := new(strings.Builder)
+	translator.Init(out)
 
 	if filename != "" {
 		fmt.Printf("input:\t%s\n", filename)
-		vmFile = openVMFile(filename)
-		asm := vm.Assemble(vmFile)
-		writeToAsmFile(filename, asm)
+		vmFile := openVMFile(filename)
+		defer vmFile.Close()
+		vm.Assemble(vmFile, out)
 	}
 	if dirname != "" {
 		dirname = strings.TrimSuffix(dirname, "/")
 		fmt.Printf("input:\t%s\n", dirname)
-		vmFile, filename = openVMDirFiles(dirname)
-		asm := vm.Assemble(vmFile)
+
+		for _, vmFile := range dirFiles(dirname) {
+			defer vmFile.Close()
+			vm.Assemble(vmFile, out)
+		}
+
+		splitDir := strings.Split(dirname, "/")
+		filename = splitDir[len(splitDir)-1]
 		filename = fmt.Sprintf("%s/%s.vm", dirname, filename)
-		writeToAsmFile(filename, asm)
 	}
+
+	writeToAsmFile(filename, out.String())
 }
 
 func openVMFile(filename string) *os.File {
@@ -44,7 +51,7 @@ func openVMFile(filename string) *os.File {
 	return inputFile
 }
 
-func openVMDirFiles(dirname string) (*os.File, string) {
+func dirFiles(dirname string) []*os.File {
 	entries, err := os.ReadDir(dirname)
 	panicsOnErrorf("error reading directory\n", err)
 
@@ -54,22 +61,18 @@ func openVMDirFiles(dirname string) (*os.File, string) {
 	panicsOnError(err)
 	defer os.Remove(tmpFile.Name())
 
+	files := make([]*os.File, 0)
 	for _, entry := range entries {
 		if entry.IsDir() {
 			continue
 		}
 		if strings.HasSuffix(entry.Name(), "vm") {
-			vmFile := openVMFile(dirname + "/" + entry.Name())
-			data, err := io.ReadAll(vmFile)
-			panicsOnErrorf(fmt.Sprintf("could not read file <%s>\n", entry.Name()), err)
-			_, err = tmpFile.Write(data)
-			panicsOnError(err)
+			file := openVMFile(dirname + "/" + entry.Name())
+			files = append(files, file)
 		}
 	}
 
-	_, err = tmpFile.Seek(0, 0)
-	panicsOnError(err)
-	return tmpFile, tmpFilename
+	return files
 }
 
 func writeToAsmFile(filename string, content string) {
